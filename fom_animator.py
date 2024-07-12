@@ -150,7 +150,7 @@ def make_gif(source_image, driving_video_id = 'moving_face'):
 
 def initModel():
     parser = ArgumentParser()
-    parser.add_argument("--config", default='config/vox-adv-256.yaml', required=True, help="path to config")
+    parser.add_argument("--config", default='config/vox-adv-256.yaml', help="path to config")
     parser.add_argument("--checkpoint", default='checkpoints/vox-adv-cpk.pth.tar', help="path to checkpoint to restore")
 
     parser.add_argument("--source_image", default='sup-mat/source.png', help="path to source image")
