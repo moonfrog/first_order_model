@@ -113,7 +113,7 @@ def find_best_frame(source, driving, cpu=False):
 
 def make_gif(source_image, driving_video_id = 'moving_face'):
     source_image = imageio.imread(source_image)
-    reader = imageio.get_reader('faceAnimateModels/first-order-model/driving_video/' + driving_video_id + '.mp4')
+    reader = imageio.get_reader('faceAnimateModels/first_order_model/driving_video/' + driving_video_id + '.mp4')
     fps = reader.get_meta_data()['fps']
     driving_video = []
     try:
