@@ -104,35 +104,9 @@ def find_best_frame(source, driving, cpu=False):
             frame_num = i
     return frame_num
 
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("--config", required=True, help="path to config")
-    parser.add_argument("--checkpoint", default='vox-cpk.pth.tar', help="path to checkpoint to restore")
-
-    parser.add_argument("--source_image", default='sup-mat/source.png', help="path to source image")
-    parser.add_argument("--driving_video", default='driving.mp4', help="path to driving video")
-    parser.add_argument("--result_video", default='result.mp4', help="path to output")
-
-    parser.add_argument("--relative", dest="relative", action="store_true", help="use relative or absolute keypoint coordinates")
-    parser.add_argument("--adapt_scale", dest="adapt_scale", action="store_true", help="adapt movement scale based on convex hull of keypoints")
-
-    parser.add_argument("--find_best_frame", dest="find_best_frame", action="store_true",
-                        help="Generate from the frame that is the most alligned with source. (Only for faces, requires face_aligment lib)")
-
-    parser.add_argument("--best_frame", dest="best_frame", type=int, default=None, help="Set frame to start from.")
-
-    parser.add_argument("--cpu", dest="cpu", action="store_true", help="cpu mode.")
-
-    parser.add_argument("--audio", dest="audio", action="store_true", help="copy audio to output from the driving video" )
-
-    parser.set_defaults(relative=False)
-    parser.set_defaults(adapt_scale=False)
-    parser.set_defaults(audio_on=False)
-
-    opt = parser.parse_args()
-
-    source_image = imageio.imread(opt.source_image)
-    reader = imageio.get_reader(opt.driving_video)
+def make_gif(source_image, driving_video_id = 'moving_face'):
+    source_image = imageio.imread(source_image)
+    reader = imageio.get_reader('examples/driving_video/' + driving_video_id + '.mp4')
     fps = reader.get_meta_data()['fps']
     driving_video = []
     try:
@@ -166,3 +140,31 @@ if __name__ == "__main__":
                     copyfileobj(output, result)
         except ffmpeg.Error:
             print("Failed to copy audio: the driving video may have no audio track or the audio format is invalid.")
+
+def initModel():
+    parser = ArgumentParser()
+    parser.add_argument("--config", default='config/vox-adv-256.yaml', required=True, help="path to config")
+    parser.add_argument("--checkpoint", default='checkpoints/vox-adv-cpk.pth.tar', help="path to checkpoint to restore")
+
+    parser.add_argument("--source_image", default='sup-mat/source.png', help="path to source image")
+    parser.add_argument("--driving_video", default='driving.mp4', help="path to driving video")
+    parser.add_argument("--result_video", default='result.mp4', help="path to output")
+
+    parser.add_argument("--relative", dest="relative", action="store_true", help="use relative or absolute keypoint coordinates")
+    parser.add_argument("--adapt_scale", dest="adapt_scale", action="store_true", help="adapt movement scale based on convex hull of keypoints")
+
+    parser.add_argument("--find_best_frame", dest="find_best_frame", action="store_true",
+                        help="Generate from the frame that is the most alligned with source. (Only for faces, requires face_aligment lib)")
+
+    parser.add_argument("--best_frame", dest="best_frame", type=int, default=None, help="Set frame to start from.")
+
+    parser.add_argument("--cpu", dest="cpu", action="store_true", help="cpu mode.")
+
+    parser.add_argument("--audio", dest="audio", action="store_true", help="copy audio to output from the driving video" )
+
+    parser.set_defaults(relative=True)
+    parser.set_defaults(adapt_scale=False)
+    parser.set_defaults(audio_on=False)
+
+    global opt
+    opt = parser.parse_args()
