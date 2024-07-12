@@ -1,4 +1,11 @@
 import sys
+import os
+
+current_dir = os.path.abspath(os.path.dirname(__file__))
+root_dir = os.path.abspath(os.path.join(current_dir, '..', '..',))
+sys.path.insert(0, current_dir)
+
+
 import yaml
 from argparse import ArgumentParser
 from tqdm.auto import tqdm
