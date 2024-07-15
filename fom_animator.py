@@ -178,9 +178,9 @@ def initModel():
     parser.set_defaults(relative=True)
     parser.set_defaults(adapt_scale=False)
     parser.set_defaults(audio_on=False)
+   
+    global opt
+    opt = parser.parse_args()
 
     global generator, kp_detector
     generator, kp_detector = load_checkpoints(config_path=opt.config, checkpoint_path=opt.checkpoint, cpu=opt.cpu)
-
-    global opt
-    opt = parser.parse_args()
