@@ -25,7 +25,7 @@ import ffmpeg
 from os.path import splitext
 from shutil import copyfileobj
 from tempfile import NamedTemporaryFile
-
+import time
 if sys.version_info[0] < 3:
     raise Exception("You must use Python 3 or higher. Recommended version is Python 3.7")
 
@@ -63,6 +63,7 @@ def load_checkpoints(config_path, checkpoint_path, cpu=False):
 
 
 def make_animation(source_image, driving_video, generator, kp_detector, relative=True, adapt_movement_scale=True, cpu=False):
+    t = time.time()
     with torch.no_grad():
         predictions = []
         source = torch.tensor(source_image[np.newaxis].astype(np.float32)).permute(0, 3, 1, 2)
@@ -71,7 +72,8 @@ def make_animation(source_image, driving_video, generator, kp_detector, relative
         driving = torch.tensor(np.array(driving_video)[np.newaxis].astype(np.float32)).permute(0, 4, 1, 2, 3)
         kp_source = kp_detector(source)
         kp_driving_initial = kp_detector(driving[:, :, 0])
-
+        print("Prayag : tracker inside pre make_animation", time.time() - t)
+        t = time.time()
         for frame_idx in tqdm(range(driving.shape[2])):
             driving_frame = driving[:, :, frame_idx]
             if not cpu:
@@ -83,6 +85,7 @@ def make_animation(source_image, driving_video, generator, kp_detector, relative
             out = generator(source, kp_source=kp_source, kp_driving=kp_norm)
 
             predictions.append(np.transpose(out['prediction'].data.cpu().numpy(), [0, 2, 3, 1])[0])
+    print("Prayag : tracker inside post make_animation", time.time() - t)
     return predictions
 
 def find_best_frame(source, driving, cpu=False):
@@ -112,6 +115,7 @@ def find_best_frame(source, driving, cpu=False):
     return frame_num
 
 def make_gif(source_image, driving_video_id = 'moving_face_2sec'):
+    t = time.time()
     source_image = imageio.imread(source_image)
     reader = imageio.get_reader('faceAnimateModels/first_order_model/driving_video/' + driving_video_id + '.mp4')
     fps = reader.get_meta_data()['fps']
@@ -126,7 +130,8 @@ def make_gif(source_image, driving_video_id = 'moving_face_2sec'):
     source_image = resize(source_image, (256, 256))[..., :3]
     driving_video = [resize(frame, (256, 256))[..., :3] for frame in driving_video]
     generator, kp_detector = load_checkpoints(config_path=opt.config, checkpoint_path=opt.checkpoint, cpu=opt.cpu)
-
+    print("Prayag : tracker load_checkpoints", time.time() - t)
+    t = time.time()
     if opt.find_best_frame or opt.best_frame is not None:
         i = opt.best_frame if opt.best_frame is not None else find_best_frame(source_image, driving_video, cpu=opt.cpu)
         print("Best frame: " + str(i))
@@ -138,7 +143,8 @@ def make_gif(source_image, driving_video_id = 'moving_face_2sec'):
     else:
         predictions = make_animation(source_image, driving_video, generator, kp_detector, relative=opt.relative, adapt_movement_scale=opt.adapt_scale, cpu=opt.cpu)
     imageio.mimsave(opt.result_video, [img_as_ubyte(frame) for frame in predictions], fps=fps)
-
+    print("Prayag : tracker predictions", time.time() - t)
+    t = time.time()
     if opt.audio:
         try:
             with NamedTemporaryFile(suffix=splitext(opt.result_video)[1]) as output:
@@ -147,6 +153,7 @@ def make_gif(source_image, driving_video_id = 'moving_face_2sec'):
                     copyfileobj(output, result)
         except ffmpeg.Error:
             print("Failed to copy audio: the driving video may have no audio track or the audio format is invalid.")
+    print("Prayag : tracker copyfileobj", time.time() - t)
 
 def initModel():
     parser = ArgumentParser()
