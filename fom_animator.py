@@ -129,7 +129,6 @@ def make_gif(source_image, driving_video_id = 'moving_face_2sec'):
 
     source_image = resize(source_image, (256, 256))[..., :3]
     driving_video = [resize(frame, (256, 256))[..., :3] for frame in driving_video]
-    generator, kp_detector = load_checkpoints(config_path=opt.config, checkpoint_path=opt.checkpoint, cpu=opt.cpu)
     print("Prayag : tracker load_checkpoints", time.time() - t)
     t = time.time()
     if opt.find_best_frame or opt.best_frame is not None:
@@ -179,6 +178,9 @@ def initModel():
     parser.set_defaults(relative=True)
     parser.set_defaults(adapt_scale=False)
     parser.set_defaults(audio_on=False)
+
+    global generator, kp_detector
+    generator, kp_detector = load_checkpoints(config_path=opt.config, checkpoint_path=opt.checkpoint, cpu=opt.cpu)
 
     global opt
     opt = parser.parse_args()
