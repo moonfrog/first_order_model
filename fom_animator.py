@@ -143,7 +143,6 @@ def make_gif(source_image, driving_video_id = 'moving_face_2sec'):
         predictions = make_animation(source_image, driving_video, generator, kp_detector, relative=opt.relative, adapt_movement_scale=opt.adapt_scale, cpu=opt.cpu)
     imageio.mimsave(opt.result_video, [img_as_ubyte(frame) for frame in predictions], fps=fps)
     print("Prayag : tracker predictions", time.time() - t)
-    t = time.time()
     if opt.audio:
         try:
             with NamedTemporaryFile(suffix=splitext(opt.result_video)[1]) as output:
@@ -152,7 +151,7 @@ def make_gif(source_image, driving_video_id = 'moving_face_2sec'):
                     copyfileobj(output, result)
         except ffmpeg.Error:
             print("Failed to copy audio: the driving video may have no audio track or the audio format is invalid.")
-    print("Prayag : tracker copyfileobj", time.time() - t)
+
 
 def initModel():
     parser = ArgumentParser()
