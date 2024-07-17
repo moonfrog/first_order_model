@@ -115,7 +115,6 @@ def find_best_frame(source, driving, cpu=False):
     return frame_num
 
 def make_gif(source_image, output_path, driving_video_id = 'moving_face_2sec'):
-    opt.result_video = output_path
     t = time.time()
     source_image = imageio.imread(source_image)
     reader = imageio.get_reader('faceAnimateModels/first_order_model/driving_video/' + driving_video_id + '.mp4')
@@ -142,13 +141,13 @@ def make_gif(source_image, output_path, driving_video_id = 'moving_face_2sec'):
         predictions = predictions_backward[::-1] + predictions_forward[1:]
     else:
         predictions = make_animation(source_image, driving_video, generator, kp_detector, relative=opt.relative, adapt_movement_scale=opt.adapt_scale, cpu=opt.cpu)
-    imageio.mimsave(opt.result_video, [img_as_ubyte(frame) for frame in predictions], fps=fps)
+    imageio.mimsave(output_path, [img_as_ubyte(frame) for frame in predictions], fps=fps)
     print("Prayag : tracker predictions", time.time() - t)
     if opt.audio:
         try:
-            with NamedTemporaryFile(suffix=splitext(opt.result_video)[1]) as output:
-                ffmpeg.output(ffmpeg.input(opt.result_video).video, ffmpeg.input(opt.driving_video).audio, output.name, c='copy').run()
-                with open(opt.result_video, 'wb') as result:
+            with NamedTemporaryFile(suffix=splitext(output_path)[1]) as output:
+                ffmpeg.output(ffmpeg.input(output_path).video, ffmpeg.input(opt.driving_video).audio, output.name, c='copy').run()
+                with open(output_path, 'wb') as result:
                     copyfileobj(output, result)
         except ffmpeg.Error:
             print("Failed to copy audio: the driving video may have no audio track or the audio format is invalid.")
@@ -177,6 +176,7 @@ def initModel():
 
     parser.set_defaults(relative=True)
     parser.set_defaults(adapt_scale=False)
+    parser.set_defaults(audio=False)
     parser.set_defaults(audio_on=False)
    
     global opt
